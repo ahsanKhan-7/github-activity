@@ -1,0 +1,35 @@
+name: Daily Activity Log
+
+# Runs automatically every day and makes a small, real commit
+# so your GitHub contribution graph stays green.
+
+on:
+  schedule:
+    # Runs at 09:00 UTC every day = 2:00 PM Pakistan Standard Time (PKT, UTC+5)
+    - cron: '0 9 * * *'
+  workflow_dispatch:   # lets you also trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  log-activity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update activity log
+        run: |
+          mkdir -p .activity-log
+          echo "$(date -u '+%Y-%m-%d %H:%M UTC') — daily check-in" >> .activity-log/log.md
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .activity-log/log.md
+          git commit -m "chore: daily activity log $(date -u '+%Y-%m-%d')" || echo "Nothing to commit"
+          git push
